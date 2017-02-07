@@ -1,0 +1,11 @@
+.c-accordion {
+
+  .c-accordion-item {
+
+    .accordion-item-content {
+      &.-closed {
+        display: none;
+      }
+    }
+  }
+}
