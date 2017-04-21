@@ -101,6 +101,7 @@ export function initLayers(workspaceLayers, libraryLayers) {
           library: true,
           added: true,
           description: libraryLayer.description || matchedWorkspaceLayer.description,
+          url: libraryLayer.url || matchedWorkspaceLayer.url,
           reportId: libraryLayer.reportId
         });
       } else {
