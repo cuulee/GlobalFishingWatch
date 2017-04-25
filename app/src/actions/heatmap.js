@@ -126,8 +126,9 @@ function parseLayerTile(tileCoordinates, columns, map, rawTileData, prevPlayback
  * @param  {array} referenceTiles           list of reference tiles (tile data regardless of layer) that need to be loaded
  * @param  {object} newTemporalExtentsToLoad (optional) a dict (layerId is the key) of temporal extents indices that should be
  * appended to existing data
+ * @param  {bool} deferParsing              load but keep parsing for later, avoiding UI lock
  */
-function getTiles(layerIds, referenceTiles, newTemporalExtentsToLoad) {
+function getTiles(layerIds, referenceTiles, newTemporalExtentsToLoad, deferParsing) {
   return (dispatch, getState) => {
     const loaderId = LOADERS.HEATMAP_TILES + new Date().getTime();
     dispatch(addLoader(loaderId));
@@ -150,14 +151,12 @@ function getTiles(layerIds, referenceTiles, newTemporalExtentsToLoad) {
           tile = {
             uid: referenceTile.uid,
             canvas: referenceTile.canvas,
-            temporalExtentsIndicesLoaded: []
+            temporalExtentsIndicesLoaded: [],
+            deferredParsingRawData: undefined
           };
           layers[layerId].tiles.push(tile);
-          // console.log(tile)
-        } else {
-          // console.log(tile)
-          // console.log(layers[layerId].visibleTemporalExtentsIndices)
         }
+
         const queriedTemporalExtentsIndices = (newTemporalExtentsToLoad === undefined)
           ? layers[layerId].visibleTemporalExtentsIndices
           : newTemporalExtentsToLoad[layerId];
@@ -180,17 +179,38 @@ function getTiles(layerIds, referenceTiles, newTemporalExtentsToLoad) {
         allPromises.push(tilePromise);
 
         tilePromise.then((rawTileData) => {
+          console.log('resolved', rawTileData)
+
+          // keep loaded indices to avoid having to reload them later on
           tile.temporalExtentsIndicesLoaded = _.uniq(tile.temporalExtentsIndicesLoaded.concat(temporalExtentsIndicesToLoad));
-          tile.data = parseLayerTile(
-            referenceTile.tileCoordinates,
-            Object.keys(layerHeader.colsByName),
-            map,
-            rawTileData,
-            tile.data
-          );
-          dispatch({
-            type: UPDATE_HEATMAP_TILES, payload: layers
-          });
+
+          if (deferParsing === true) {
+            tile.deferredParsingRawData = rawTileData;
+          } else {
+            if (tile.deferredParsingRawData !== undefined) {
+              tile.data = parseLayerTile(
+                referenceTile.tileCoordinates,
+                Object.keys(layerHeader.colsByName),
+                map,
+                tile.deferredParsingRawData,
+                tile.data
+              );
+            }
+
+            if (rawTileData.length) {
+              tile.data = parseLayerTile(
+                referenceTile.tileCoordinates,
+                Object.keys(layerHeader.colsByName),
+                map,
+                rawTileData,
+                tile.data
+              );
+            }
+
+            dispatch({
+              type: UPDATE_HEATMAP_TILES, payload: layers
+            });
+          }
         });
       });
     });
