@@ -47,14 +47,6 @@ class DurationPicker extends Component {
     return moment.duration(innerDelta).humanize();
   }
 
-  getWidth(extentPx) {
-    return `${extentPx[1] - extentPx[0]}px`;
-  }
-
-  getLeft(extentPx) {
-    return `${extentPx[0]}px`;
-  }
-
   setTimeRange(event) {
     const durationIndex = event.currentTarget.getAttribute('data-index');
     const duration = DURATION_PICKER_OPTIONS[durationIndex];
@@ -82,9 +74,15 @@ class DurationPicker extends Component {
   render() {
     let filterFunc = null;
     const humanizedDuration = this.getHumanizedDuration(this.state.extent);
+
+    const offset = (this.props.offsetX === undefined) ? 260 : this.props.offsetX;
+    const width = this.props.extentPx[1] - this.props.extentPx[0];
+    const right = (this.props.extentPx[1] + offset > window.innerWidth - 50) ? window.innerWidth - 50 - offset : this.props.extentPx[1];
+    const left = right - width;
+
     const style = {
-      width: this.getWidth(this.props.extentPx),
-      left: this.getLeft(this.props.extentPx)
+      width: `${width}px`,
+      left: `${left}px`
     };
 
     // filters predefined time ranges to avoid overlapping the whole timebar
@@ -142,7 +140,8 @@ DurationPicker.propTypes = {
   extent: React.PropTypes.array,
   extentPx: React.PropTypes.array,
   timelineOuterExtent: React.PropTypes.array,
-  onTimeRangeSelected: React.PropTypes.func
+  onTimeRangeSelected: React.PropTypes.func,
+  offsetX: React.PropTypes.number
 };
 
 export default DurationPicker;

@@ -554,10 +554,12 @@ class Timebar extends Component {
         <div
           className={classnames(timebarCss['c-timebar-element'], timelineCss['c-timeline'])}
           id="timeline_svg_container"
+          ref={(timelineDOM) => { this.timelineDOM = timelineDOM; }}
         >
           <DurationPicker
             extent={this.state.durationPickerExtent}
             extentPx={this.state.innerExtentPx}
+            offsetX={this.timelineDOM && this.timelineDOM.getBoundingClientRect().left}
             timelineOuterExtent={this.props.timelineOuterExtent}
             onTimeRangeSelected={rangeTime => this.onTimeRangeSelected(rangeTime)}
           />
