@@ -25,17 +25,24 @@ class FilterPanel extends Component {
     const countryNames = [];
     const countryOptions = [];
 
+    const supportsEmojiFlags =
+      ['iOS', 'OS X'].indexOf(platform.os.family) > -1 ||
+      platform.os.toString().match('Windows 10');
+
     Object.keys(FLAGS)
       .filter(key => FLAGS_LANDLOCKED.indexOf(FLAGS[key]) === -1)
       .forEach((index) => {
         if (iso3311a2.getCountry(FLAGS[index])) {
           const countryCode = FLAGS[index];
           const iconAsciiCodePoints = FLAGS_SHORTCODES[countryCode.toLowerCase()];
-          countryNames.push({
+          const country = {
             name: iso3311a2.getCountry(countryCode),
-            icon: String.fromCodePoint.apply(null, iconAsciiCodePoints),
             id: index
-          });
+          };
+          if (supportsEmojiFlags) {
+            country.icon = String.fromCodePoint.apply(null, iconAsciiCodePoints);
+          }
+          countryNames.push(country);
         }
       });
 
@@ -52,10 +59,6 @@ class FilterPanel extends Component {
     });
 
     countryOptions.push(<option key="" value="">All countries</option>);
-
-    const supportsEmojiFlags =
-      ['iOS', 'OS X'].indexOf(platform.os.family) > -1 ||
-      platform.os.toString().match('Windows 10');
 
     countryNames.forEach((country) => {
       const label = (supportsEmojiFlags) ? `${country.name} ${country.icon}` : country.name;
