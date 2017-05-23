@@ -1,5 +1,8 @@
 # Changelog
 
+- Fix support for multiple fishing event layers
+- Add support for dynamic vessel detail info
+
 ## 2.0.2
 - Fix issue where welcome modal would show unneeded scrollbars on desktop screen sizes
 
